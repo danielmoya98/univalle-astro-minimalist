@@ -26,12 +26,14 @@
 
 ## ✨ Características Principales
 
-- 🍱 **Diseño Bento Grid**: Estructura visual moderna en formato rejilla Bento con acabados *glassmorphism* y gradientes sutiles.
+- 🍱 **Diseño Bento Grid**: Estructura visual moderna en formato rejilla Bento con acabados *dark glassmorphism* y gradientes sutiles.
 - 🏝️ **Arquitectura de Islas (Astro Islands)**: Componentes estáticos entregados como HTML de alto rendimiento (0kB de JS) e islas interactivas de React hidratadas bajo demanda.
-- 🔍 **FAQ Acordeón Interactivo**: Despliegue dinámico de guías paso a paso con Framer Motion y Lucide Icons.
-- ⚡ **Optimización de Assets (`astro:assets`)**: Procesamiento y compresión automática de imágenes a formato WebP.
+- 🔎 **Búsqueda Instantánea & Filtros**: Buscador por palabra clave en tiempo real y chips de filtro por categoría (*"Accesos"*, *"Plataformas"*, *"Trámites"*).
+- 💬 **Soporte Directo por WhatsApp**: Integración directa con el canal de atención rápida de la mesa de ayuda TICS de la Sede Sucre.
+- ♿ **Accesibilidad & Teclado (WCAG AA)**: Atributos ARIA completos (`aria-expanded`, `aria-controls`), navegación por teclado y soporte para tecla `Escape` en modales.
+- ⚡ **Loader Ultrarrápido (`400ms`)**: Tiempo de carga percibido optimizado con transiciones de entrada suaves.
+- 🖼️ **Optimización de Assets (`astro:assets`)**: Procesamiento y compresión automática de imágenes a formato WebP.
 - 🎨 **Tipografía Autohospedada**: Integración de `@fontsource/inter` para eliminar llamadas externas bloquantes a Google Fonts.
-- 📱 **Diseño Responsive & SEO**: Optimizado con etiquetas Open Graph, URL canónica, meta descripción y compatibilidad completa con dispositivos móviles.
 
 ---
 
