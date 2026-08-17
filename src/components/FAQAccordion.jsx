@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ExternalLink, KeyRound, Monitor, UserCheck, Maximize2, CheckCircle2 } from 'lucide-react';
+import { ChevronDown, ExternalLink, KeyRound, Monitor, UserCheck, Maximize2, CheckCircle2, Search, X } from 'lucide-react';
 
 const faqData = [
   {
@@ -18,7 +18,6 @@ const faqData = [
     ],
     linkText: 'Ir al Portal SIU',
     linkUrl: 'https://siu.univalle.edu',
-    // Captura de pantalla de ejemplo desde Unsplash
     image: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop',
     imageAlt: 'Interfaz de recuperación de contraseña'
   },
@@ -62,157 +61,236 @@ const faqData = [
 
 export default function FAQAccordion() {
   const [openId, setOpenId] = useState('siu-pass');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('Todas');
   const [selectedImage, setSelectedImage] = useState(null);
+
+  // Cerrar lightbox con tecla Escape
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setSelectedImage(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const toggleAccordion = (id) => {
     setOpenId(openId === id ? null : id);
   };
 
-  return (
-    <div className="space-y-3">
-      {faqData.map((item) => {
-        const isOpen = openId === item.id;
-        const Icon = item.icon;
+  const categories = ['Todas', 'Recuperación de Accesos', 'Plataformas Educativas', 'Trámites Académicos'];
 
-        return (
-          <div
-            key={item.id}
-            className={`border rounded-xl transition-all duration-300 overflow-hidden ${
-              isOpen
+  const filteredFaqs = faqData.filter((item) => {
+    const matchesCat = activeCategory === 'Todas' || item.category === activeCategory;
+    const matchesSearch =
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.steps.some(step => step.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesCat && matchesSearch;
+  });
+
+  return (
+    <div className="space-y-4">
+      {/* Controles de Búsqueda y Filtros */}
+      <div className="space-y-3 pb-2 border-b border-slate-100">
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por palabra clave (SIU, Teams, carnet, clave)..."
+            aria-label="Buscar preguntas frecuentes"
+            className="w-full pl-10 pr-9 py-2.5 bg-slate-100/80 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+              aria-label="Limpiar búsqueda"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Chips de Categorías */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap ${
+                activeCategory === cat
+                  ? 'bg-rose-700 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Lista de FAQs */}
+      {filteredFaqs.length === 0 ? (
+        <div className="p-8 text-center bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+          <p className="text-xs text-slate-500 font-medium">No se encontraron resultados para tu búsqueda.</p>
+          <button
+            onClick={() => { setSearchQuery(''); setActiveCategory('Todas'); }}
+            className="mt-2 text-xs font-bold text-rose-700 hover:underline"
+          >
+            Restablecer filtros
+          </button>
+        </div>
+      ) : (
+        filteredFaqs.map((item) => {
+          const isOpen = openId === item.id;
+          const Icon = item.icon;
+
+          return (
+            <div
+              key={item.id}
+              className={`border rounded-xl transition-all duration-300 overflow-hidden ${isOpen
                 ? 'bg-slate-50/90 border-rose-200/80 shadow-md ring-1 ring-rose-500/10'
                 : 'bg-white/80 hover:bg-white border-slate-200/70 hover:border-slate-300'
-            }`}
-          >
-            {/* Encabezado de la Tarjeta */}
-            <button
-              onClick={() => toggleAccordion(item.id)}
-              className="w-full p-4 sm:p-5 text-left flex items-start justify-between gap-4 transition-colors focus:outline-none"
+                }`}
             >
-              <div className="flex items-start gap-3.5">
-                <div
-                  className={`p-2.5 rounded-lg shrink-0 transition-colors ${
-                    isOpen
+              {/* Encabezado con Atributos ARIA */}
+              <button
+                id={`faq-btn-${item.id}`}
+                aria-expanded={isOpen}
+                aria-controls={`faq-panel-${item.id}`}
+                onClick={() => toggleAccordion(item.id)}
+                className="w-full p-4 sm:p-5 text-left flex items-start justify-between gap-4 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+              >
+                <div className="flex items-start gap-3.5">
+                  <div
+                    className={`p-2.5 rounded-lg shrink-0 transition-colors ${isOpen
                       ? 'bg-rose-700 text-white shadow-sm'
                       : 'bg-slate-100 text-slate-700'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                </div>
-
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-800 bg-rose-100/80 px-2 py-0.5 rounded">
-                      {item.category}
-                    </span>
-                    {item.badge && (
-                      <span className="text-[10px] font-bold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded">
-                        {item.badge}
-                      </span>
-                    )}
+                      }`}
+                  >
+                    <Icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
-                    {item.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 line-clamp-1">
-                    {item.summary}
-                  </p>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-800 bg-rose-100/80 px-2 py-0.5 rounded">
+                        {item.category}
+                      </span>
+                      {item.badge && (
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+                      {item.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 line-clamp-1">
+                      {item.summary}
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div
-                className={`p-1.5 rounded-full border border-slate-200 text-slate-500 transition-transform duration-300 ${
-                  isOpen ? 'rotate-180 bg-rose-50 text-rose-700 border-rose-200' : ''
-                }`}
-              >
-                <ChevronDown className="w-4 h-4" />
-              </div>
-            </button>
-
-            {/* Contenido Desplegable (2 Columnas: Pasos + Captura Unsplash) */}
-            <AnimatePresence initial={false}>
-              {isOpen && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                <div
+                  className={`p-1.5 rounded-full border border-slate-200 text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180 bg-rose-50 text-rose-700 border-rose-200' : ''
+                    }`}
                 >
-                  <div className="px-4 pb-5 pt-1 sm:px-5 border-t border-slate-200/60">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center pt-3">
+                  <ChevronDown className="w-4 h-4" />
+                </div>
+              </button>
 
-                      {/* Columna Izquierda: Pasos Guiados */}
-                      <div className="md:col-span-7 space-y-4">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                          <CheckCircle2 className="w-4 h-4 text-rose-700" />
-                          Pasos a seguir:
-                        </h4>
+              {/* Panel Desplegable con ARIA role="region" */}
+              <AnimatePresence initial={false}>
+                {isOpen && (
+                  <motion.div
+                    id={`faq-panel-${item.id}`}
+                    role="region"
+                    aria-labelledby={`faq-btn-${item.id}`}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  >
+                    <div className="px-4 pb-5 pt-1 sm:px-5 border-t border-slate-200/60">
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center pt-3">
 
-                        <ol className="space-y-2 text-xs text-slate-600 font-medium">
-                          {item.steps.map((step, idx) => (
-                            <li key={idx} className="flex items-start gap-2.5">
-                              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 text-rose-900 font-bold text-[10px] shrink-0 mt-0.5">
-                                {idx + 1}
+                        {/* Columna Izquierda: Pasos Guiados */}
+                        <div className="md:col-span-7 space-y-4">
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                            <CheckCircle2 className="w-4 h-4 text-rose-700" />
+                            Pasos a seguir:
+                          </h4>
+
+                          <ol className="space-y-2 text-xs text-slate-600 font-medium">
+                            {item.steps.map((step, idx) => (
+                              <li key={idx} className="flex items-start gap-2.5">
+                                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 text-rose-900 font-bold text-[10px] shrink-0 mt-0.5">
+                                  {idx + 1}
+                                </span>
+                                <span className="leading-relaxed">{step}</span>
+                              </li>
+                            ))}
+                          </ol>
+
+                          {item.linkUrl && (
+                            <div className="pt-2">
+                              <a
+                                href={item.linkUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 hover:text-rose-800 underline underline-offset-4 transition-colors"
+                              >
+                                <span>{item.linkText}</span>
+                                <ExternalLink className="w-3.5 h-3.5" />
+                              </a>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Columna Derecha: Captura de pantalla */}
+                        <div className="md:col-span-5">
+                          <div className="relative group rounded-xl overflow-hidden border border-slate-300/80 shadow-sm bg-slate-900">
+                            <div className="bg-slate-800 px-3 py-1.5 flex items-center gap-1.5">
+                              <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                              <div className="w-2 h-2 rounded-full bg-amber-500"></div>
+                              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                              <span className="text-[9px] font-mono text-slate-400 ml-2 truncate">
+                                ejemplo_pantalla.png
                               </span>
-                              <span className="leading-relaxed">{step}</span>
-                            </li>
-                          ))}
-                        </ol>
+                            </div>
 
-                        {item.linkUrl && (
-                          <div className="pt-2">
-                            <a
-                              href={item.linkUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-700 hover:text-rose-800 underline underline-offset-4 transition-colors"
-                            >
-                              <span>{item.linkText}</span>
-                              <ExternalLink className="w-3.5 h-3.5" />
-                            </a>
-                          </div>
-                        )}
-                      </div>
+                            <div className="relative aspect-video overflow-hidden">
+                              <img
+                                src={item.image}
+                                alt={item.imageAlt}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
 
-                      {/* Columna Derecha: Captura / Mockup de Unsplash */}
-                      <div className="md:col-span-5">
-                        <div className="relative group rounded-xl overflow-hidden border border-slate-300/80 shadow-sm bg-slate-900">
-                          {/* Barra estilo ventana de navegador/app */}
-                          <div className="bg-slate-800 px-3 py-1.5 flex items-center gap-1.5">
-                            <div className="w-2 h-2 rounded-full bg-rose-500"></div>
-                            <div className="w-2 h-2 rounded-full bg-amber-500"></div>
-                            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                            <span className="text-[9px] font-mono text-slate-400 ml-2 truncate">
-                              ejemplo_pantalla.png
-                            </span>
-                          </div>
-
-                          <div className="relative aspect-video overflow-hidden">
-                            <img
-                              src={item.image}
-                              alt={item.imageAlt}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-
-                            <button
-                              onClick={() => setSelectedImage(item.image)}
-                              className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 text-xs font-bold backdrop-blur-xs"
-                            >
-                              <Maximize2 className="w-4 h-4" />
-                              <span>Ampliar captura</span>
-                            </button>
+                              <button
+                                onClick={() => setSelectedImage(item.image)}
+                                className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 text-xs font-bold backdrop-blur-xs"
+                              >
+                                <Maximize2 className="w-4 h-4" />
+                                <span>Ampliar captura</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
+
                       </div>
-
                     </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        );
-      })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })
+      )}
 
+      {/* Lightbox con botón de cierre (X) y soporte Tecla Escape */}
       <AnimatePresence>
         {selectedImage && (
           <motion.div
@@ -220,8 +298,15 @@ export default function FAQAccordion() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedImage(null)}
-            className="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-md p-4 flex items-center justify-center cursor-zoom-out"
+            className="fixed inset-0 z-[120] bg-slate-950/85 backdrop-blur-md p-4 flex items-center justify-center cursor-zoom-out"
           >
+            <button
+              onClick={() => setSelectedImage(null)}
+              aria-label="Cerrar imagen"
+              className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
             <motion.img
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
