@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ExternalLink, KeyRound, Monitor, UserCheck, Maximize2, CheckCircle2, Search, X } from 'lucide-react';
 
@@ -64,6 +65,11 @@ export default function FAQAccordion() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('Todas');
   const [selectedImage, setSelectedImage] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Cerrar lightbox con tecla Escape
   useEffect(() => {
@@ -290,34 +296,49 @@ export default function FAQAccordion() {
         })
       )}
 
-      {/* Lightbox con botón de cierre (X) y soporte Tecla Escape */}
-      <AnimatePresence>
-        {selectedImage && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSelectedImage(null)}
-            className="fixed inset-0 z-[120] bg-slate-950/85 backdrop-blur-md p-4 flex items-center justify-center cursor-zoom-out"
-          >
-            <button
+      {/* Lightbox con React Portal (createPortal) a document.body para evitar recortes por CSS transform */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {selectedImage && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setSelectedImage(null)}
-              aria-label="Cerrar imagen"
-              className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+              className="fixed inset-0 z-[9999] bg-slate-950/90 backdrop-blur-md p-4 sm:p-6 md:p-10 flex items-center justify-center cursor-zoom-out"
             >
-              <X className="w-6 h-6" />
-            </button>
-            <motion.img
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-              src={selectedImage}
-              alt="Captura ampliada"
-              className="max-w-4xl max-h-[85vh] rounded-xl border border-white/20 shadow-2xl object-contain"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {/* Botón de cierre en la esquina superior derecha de la pantalla */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedImage(null);
+                }}
+                aria-label="Cerrar imagen"
+                className="absolute top-4 right-4 sm:top-6 sm:right-6 p-3 rounded-full bg-slate-800/90 border border-slate-700 text-slate-200 hover:bg-rose-600 hover:border-rose-500 hover:text-white transition-all shadow-xl z-20 cursor-pointer"
+              >
+                <X className="w-6 h-6 sm:w-7 sm:h-7" />
+              </button>
+
+              {/* Imagen ampliada centrada e inmune a contenedores hijos */}
+              <div
+                className="relative max-w-5xl max-h-[90vh] w-full flex items-center justify-center p-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <motion.img
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                  src={selectedImage}
+                  alt="Captura ampliada"
+                  className="max-w-full max-h-[85vh] w-auto h-auto rounded-xl border border-slate-700/80 shadow-2xl object-contain select-none cursor-default"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
