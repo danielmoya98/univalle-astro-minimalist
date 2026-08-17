@@ -37,6 +37,36 @@
 
 ---
 
+## 📸 Demostración Visual de Funcionalidades
+
+### 1. Vista Principal (Bento Grid Layout)
+> Interfaz principal responsiva estructurada con rejilla Bento en acabado *glassmorphism*, encabezado optimizado con `astro:assets` y tarjeta de acceso directo a la mesa de ayuda por WhatsApp.
+
+![Vista Principal Bento Grid](docs/screenshots/bento-grid.png)
+
+---
+
+### 2. Búsqueda Instantánea y Filtros por Categoría
+> Filtrado interactivo en tiempo real por término de búsqueda (ej. *"Teams"*, *"SIU"*, *"carnet"*) o mediante chips de categoría (*"Recuperación de Accesos"*, *"Plataformas Educativas"*, *"Trámites Académicos"*).
+
+![Búsqueda y Filtros](docs/screenshots/search-filter.png)
+
+---
+
+### 3. Visor Lightbox de Capturas en Pantalla Completa
+> Modal de alta resolución aislado mediante **React Portal (`createPortal`)** que cubre el 100% de la pantalla sin interferencias de contenedores padres, con soporte para tecla `Escape` y botón flotante de cierre `(X)`.
+
+![Modal Lightbox Ampliado](docs/screenshots/modal-lightbox.png)
+
+---
+
+### 4. Diseño Responsivo Móvil
+> Adaptación nativa a pantallas pequeñas (smartphones y tablets) con navegación táctil fluida y menús comprimidos.
+
+![Diseño Responsivo Móvil](docs/screenshots/mobile-view.png)
+
+---
+
 ## 🛠️ Tecnologías Utilizadas
 
 | Categoría | Tecnología / Librería | Descripción |
@@ -55,6 +85,12 @@
 
 ```text
 minimalist/
+├── docs/
+│   └── screenshots/          # Capturas de pantalla tomadas por Playwright MCP
+│       ├── bento-grid.png
+│       ├── search-filter.png
+│       ├── modal-lightbox.png
+│       └── mobile-view.png
 ├── public/
 │   ├── favicon.svg
 │   └── logo.png
@@ -63,7 +99,7 @@ minimalist/
 │   │   └── logo.png           # Assets procesados por astro:assets
 │   ├── components/
 │   │   ├── BentoFAQ.jsx        # Layout Bento Grid interactivo
-│   │   ├── FAQAccordion.jsx   # Acordeón de preguntas frecuentes
+│   │   ├── FAQAccordion.jsx   # Acordeón de preguntas frecuentes con React Portal
 │   │   ├── Header.astro       # Encabezado estático optimizado
 │   │   └── PageLoader.jsx     # Loader de pantalla completo
 │   ├── layouts/
